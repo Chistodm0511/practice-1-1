@@ -1,29 +1,43 @@
 // Тип состояния банковского счёта (Discriminated Union)
-// Поле status — это "метка", по которой компилятор понимает, какой вариант передан
 export type AccountState =
   | { status: "active"; balance: number }
   | { status: "frozen"; balance: number; reason: string }
   | { status: "closed"; closedAt: string };
 
-// Функция проверки возможности снятия средств
-// Возвращает true только если счёт активен
+// 1. Функция проверки возможности снятия средств
 export function canWithdraw(state: AccountState): boolean {
-  // Напишите код здесь
-  // Подсказка: используйте if / else if, проверяя поле status 
-
+  // Компилятор сам знает, что если status === "active", то у объекта есть balance.
+  // Нам достаточно проверить метку.
+  if (state.status === "active") {
+    return true;
+  }
+  return false;
 }
 
-// Функция получения описания состояния
-// Для active: "Счёт активен. Баланс: <balance> руб."
-// Для frozen: "Счёт заморожен. Причина: <reason>. Баланс: <balance> руб."
-// Для closed: "Счёт закрыт с <closedAt>"
+// 2. Функция получения описания состояния
 export function getStatusMessage(state: AccountState): string {
-  // Напишите код здесь
+  // Здесь используем if/else if по полю status.
+  // TypeScript автоматически подскажет, какие поля доступны в каждой ветке.
+  if (state.status === "active") {
+    return `Счёт активен. Баланс: ${state.balance} руб.`;
+  } else if (state.status === "frozen") {
+    return `Счёт заморожен. Причина: ${state.reason}. Баланс: ${state.balance} руб.`;
+  } else {
+    // Здесь state автоматически сужается до типа { status: "closed"; closedAt: string }
+    return `Счёт закрыт с ${state.closedAt}`;
+  }
 }
 
-// Функция заморозки счёта
-// Принимает активный счёт и причину, возвращает замороженный счёт
-// Если счёт не активен — возвращает его без изменений
+// 3. Функция заморозки счёта
 export function freezeAccount(state: AccountState, reason: string): AccountState {
-  // Напишите код здесь
+  // Если счёт активен — создаём новый объект с status: "frozen"
+  if (state.status === "active") {
+    return {
+      status: "frozen",
+      balance: state.balance, // сохраняем баланс
+      reason: reason,         // добавляем причину
+    };
+  }
+  // Если счёт не активен (frozen или closed) — возвращаем без изменений
+  return state;
 }
