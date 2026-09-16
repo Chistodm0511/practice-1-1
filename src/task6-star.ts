@@ -36,3 +36,4 @@ export function getNextStatuses(from: OrderStatus): OrderStatus[] {
   // Просто возвращаем копию массива из карты переходов
   return [...transitions[from]];
 }
+// force commit
